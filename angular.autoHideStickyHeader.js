@@ -2,10 +2,10 @@
   'use strict';
 
   angular.module('angular.autoHideStickyHeader', [])
-    .directive('autoHideStickyHeader', ['$window', 'throttle', directive]);
+    .directive('autoHideStickyHeader', ['$document', '$window', 'throttle', directive]);
 
 
-  function directive($window, throttle) {
+  function directive($document, $window, throttle) {
     return {
       restrict: 'E',
       replace: true,
@@ -25,7 +25,7 @@
       };
 
       var onChange = getOnChange(element, options);
-      var scrolling = new Scrolling(options, onChange);
+      var scrolling = new Scrolling($document, $window, options, onChange);
 
       var handle = throttle.this(angular.bind(scrolling, scrolling.handle), 250);
       var $el = angular.element($window).on('scroll', handle);
@@ -43,7 +43,10 @@
   }
 
 
-  function Scrolling(options, change /* (boolean) => void */) {
+  function Scrolling($document /* angular.IDocumentService */, $window /* angular.IWindowService */, options, change /* (boolean) => void */) {
+    this.$document = $document;
+    this.$window = $window;
+
     this.options = options;
     this.change = change;
 
@@ -81,11 +84,11 @@
     },
 
     update: function() /* Scrolling */ {
-      this.dHeight = document.body.offsetHeight;
-      this.wHeight = window.innerHeight;
+      this.dHeight = this.$document.prop('body').offsetHeight;
+      this.wHeight = this.$window.innerHeight;
 
       this.previous = this.current;
-      this.current = window.pageYOffset;
+      this.current = this.$window.pageYOffset;
       this.diff = this.previous - this.current;
 
       return this;

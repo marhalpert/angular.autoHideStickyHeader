@@ -27,7 +27,7 @@
       var onChange = getOnChange(element, options);
       var scrolling = new Scrolling($document, $window, options, onChange);
 
-      var handle = throttle.this(angular.bind(scrolling, scrolling.handle), 250);
+      var handle = throttle(angular.bind(scrolling, scrolling.handle), 250);
       var $el = angular.element($window).on('scroll', handle);
 
       scope.$on('destroy', function() {
@@ -98,10 +98,10 @@
 
 
   angular.module('angular.autoHideStickyHeader')
-    .service('throttle', ['$timeout', throttle]);
+    .factory('throttle', ['$timeout', throttle]);
 
   function throttle($timeout) {
-    this.this = function(func /* () => void */, threshold /* number */) /* () => void */ {
+    return function(func /* () => void */, threshold /* number */) /* () => void */ {
       var timer, previous = +new Date();
       return function() {
         function execute() {

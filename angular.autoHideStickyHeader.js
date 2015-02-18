@@ -2,7 +2,7 @@
   'use strict';
 
   angular.module('angular.autoHideStickyHeader', [])
-    .directive('autoHideStickyHeader', [ '$window', directive ]);
+    .directive('autoHideStickyHeader', ['$window', directive]);
 
 
   function directive($window) {
@@ -27,7 +27,7 @@
       var onChange = getOnChange(element, options);
       var scrolling = new Scrolling(options, onChange);
 
-      var handle = angular.bind(scrolling, scrolling.handle);
+      var handle = throttle(angular.bind(scrolling, scrolling.handle), 250);
       var $el = angular.element($window).on('scroll', handle);
 
       scope.$on('destroy', function() {
@@ -43,7 +43,7 @@
   }
 
 
-  function Scrolling(options, change) {
+  function Scrolling(options, change /* (boolean) => void */) {
     this.options = options;
     this.change = change;
 
@@ -54,19 +54,17 @@
     this.diff = 0;
   }
 
-  Scrolling.prototype = {
+  angular.extend(Scrolling.prototype, {
 
-    constructor: Scrolling,
-
-    atBottom: function() {
+    atBottom: function() /* boolean */ {
       return (this.current + this.wHeight) >= this.dHeight;
     },
 
-    down: function() {
+    down: function() /* boolean */ {
       return this.diff < 0;
     },
 
-    handle: function() {
+    handle: function() /* void */ {
       var hidden = false;
       var scrolling = this.update();
 
@@ -82,7 +80,7 @@
       this.change(hidden);
     },
 
-    update: function() {
+    update: function() /* Scrolling */ {
       this.dHeight = document.body.offsetHeight;
       this.wHeight = window.innerHeight;
 
@@ -93,6 +91,27 @@
       return this;
     }
 
-  };
+  });
+
+
+  function throttle(func /* () => void */, threshold /* number */) /* () => void */ {
+    var timer, previous = +new Date();
+    return function() {
+      function execute() {
+        func.apply(this, arguments);
+        previous = current;
+      }
+
+      var fn = execute.bind(this, arguments);
+
+      var current = +new Date();
+      if (current > (previous + threshold)) {
+        fn();
+      } else {
+        clearTimeout(timer);
+        timer = setTimeout(fn, threshold);
+      }
+    }
+  }
 
 }(angular);

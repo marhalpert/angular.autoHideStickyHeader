@@ -2,10 +2,10 @@
   'use strict';
 
   angular.module('angular.autoHideStickyHeader', [])
-    .directive('autoHideStickyHeader', ['$window', directive]);
+    .directive('autoHideStickyHeader', ['$window', 'throttle', directive]);
 
 
-  function directive($window) {
+  function directive($window, throttle) {
     return {
       restrict: 'E',
       replace: true,
@@ -27,7 +27,7 @@
       var onChange = getOnChange(element, options);
       var scrolling = new Scrolling(options, onChange);
 
-      var handle = throttle(angular.bind(scrolling, scrolling.handle), 250);
+      var handle = throttle.this(angular.bind(scrolling, scrolling.handle), 250);
       var $el = angular.element($window).on('scroll', handle);
 
       scope.$on('destroy', function() {
@@ -94,22 +94,27 @@
   });
 
 
-  function throttle(func /* () => void */, threshold /* number */) /* () => void */ {
-    var timer, previous = +new Date();
-    return function() {
-      function execute() {
-        func.apply(this, arguments);
-        previous = current;
-      }
+  angular.module('angular.autoHideStickyHeader')
+    .service('throttle', ['$timeout', throttle]);
 
-      var fn = execute.bind(this, arguments);
+  function throttle($timeout) {
+    this.this = function(func /* () => void */, threshold /* number */) /* () => void */ {
+      var timer, previous = +new Date();
+      return function() {
+        function execute() {
+          func.apply(this, arguments);
+          previous = current;
+        }
 
-      var current = +new Date();
-      if (current > (previous + threshold)) {
-        fn();
-      } else {
-        clearTimeout(timer);
-        timer = setTimeout(fn, threshold);
+        var fn = execute.bind(this, arguments);
+
+        var current = +new Date();
+        if (current > (previous + threshold)) {
+          fn();
+        } else {
+          $timeout.cancel(timer);
+          timer = $timeout(fn, threshold);
+        }
       }
     }
   }

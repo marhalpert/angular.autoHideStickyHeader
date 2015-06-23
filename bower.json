@@ -1,7 +1,10 @@
 {
   "name": "angular-auto-hide-sticky-header",
   "version": "0.1.0",
-  "main": "./angular.autoHideStickyHeader.js",
+  "main": [
+    "./angular.autoHideStickyHeader.js",
+    "./angular.autoHideStickyHeader.css"
+  ],
   "ignore": [],
   "keywords": [
     "AngularJS",

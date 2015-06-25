@@ -70,13 +70,14 @@
     handle: function() /* void */ {
       var hidden = false;
       var scrolling = this.update();
-
-      if (scrolling.down()) {
-        if (this.options.showAtBottom) {
-          var bottom = scrolling.atBottom();
-          hidden = !bottom;
-        } else {
-          hidden = true;
+      if(this.current >= 1) {
+        if (scrolling.down()) {
+          if (this.options.showAtBottom) {
+            var bottom = scrolling.atBottom();
+            hidden = !bottom;
+          } else {
+            hidden = true;
+          }
         }
       }
 
